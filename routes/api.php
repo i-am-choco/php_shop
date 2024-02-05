@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -20,3 +21,7 @@ use App\Http\Controllers\UserController;
 
 Route::post('/register', [UserController::class, "register"]);
 Route::post('/login', [UserController::class, "login"]);
+Route::middleware('auth:sanctum')->get("/products/list", [ProductController::class, "list"]);
+
+
+Route::middleware('auth:sanctum')->post("/products/create", [ProductController::class, "create"]);
