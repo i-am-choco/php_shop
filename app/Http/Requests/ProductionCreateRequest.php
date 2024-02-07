@@ -23,7 +23,7 @@ class ProductionCreateRequest extends FormRequest
     {
         return [
             'name' => "required|string",
-            'description' => "string|max255",
+            'description' => "string|max:255|nullable",
             "price" => "required|string",
         ];
     }

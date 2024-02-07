@@ -21,7 +21,10 @@ use App\Http\Controllers\ProductController;
 
 Route::post('/register', [UserController::class, "register"]);
 Route::post('/login', [UserController::class, "login"]);
-Route::middleware('auth:sanctum')->get("/products/list", [ProductController::class, "list"]);
-
-
-Route::middleware('auth:sanctum')->post("/products/create", [ProductController::class, "create"]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get("/products/list", [ProductController::class, "list"]);
+    Route::post("/products/create", [ProductController::class, "create"]);
+    Route::post("/products/batchCreate", [ProductController::class, "batchCreate"]);
+    Route::get("/products/detail", [ProductController::class, "detail"]);
+    Route::get("/products/delete", [ProductController::class, "delete"]);
+});
