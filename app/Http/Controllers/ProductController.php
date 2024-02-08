@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductExport;
 use App\Http\Requests\ProductionListRequest;
 use App\Http\Requests\ProductionCreateRequest;
+use App\Imports\ProductImport;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -119,6 +123,11 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * 刪除功能
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function delete(Request $request)
     {
         try {
@@ -136,6 +145,35 @@ class ProductController extends Controller
         }catch (\Exception $e)
         {
             return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function import(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls',
+            ]);
+
+            $file = $request->file("file");
+            Excel::import(new ProductImport(), $file);
+
+            return response()->json(["message" => "Success"], 200);
+        }catch (\Exception $e)
+        {
+            return response()->json(["message" => $e->getMessage()], 500);
+        }
+
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new ProductExport(), 'file.xlsx');
+        }catch (\Exception $e)
+        {
+            return response()->json(["message" => $e->getMessage()], 500);
         }
     }
 

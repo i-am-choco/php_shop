@@ -28,3 +28,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("/products/detail", [ProductController::class, "detail"]);
     Route::get("/products/delete", [ProductController::class, "delete"]);
 });
+Route::post('/products/import', [ProductController::class, "import"]);
+Route::get('/products/export', [ProductController::class, "export"]);
