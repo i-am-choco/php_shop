@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Bus;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -25,8 +24,7 @@ class ProductTest extends TestCase
 
     public function test_batch_create(): void
     {
-        Bus::fake();
-        Sanctum::actingAs(User::factory()->create());
+//        Sanctum::actingAs(User::factory()->create());
 
         $response = $this->post(
             "/api/products/batchCreate",

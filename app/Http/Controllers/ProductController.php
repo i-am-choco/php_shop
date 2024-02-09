@@ -20,12 +20,23 @@ class ProductController extends Controller
      * @param ProductionListRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function list(ProductionListRequest $request)
+    public function list(Request $request)
     {
         try {
             $page = $request->input("page", 1);
             $page_size = $request->input("page_size", 20);
-            $list = Product::query()->paginate($page_size, ['*'], 'page', $page);
+            $list = Product::query()
+                ->when($request->filled('description'), function ($query) use ($request) {
+                    $query->where('description', 'like', '%' . $request->input('description') . '%');
+                })
+                ->when($request->filled('price'), function ($query) use ($request) {
+                    $query->where('price', $request->input('price'));
+                })
+                ->when($request->filled('start_date') && $request->filled('end_date'), function ($query) use ($request){
+                    $query->whereDate('created_at', '>=', $request->input('start_date'))
+                        ->whereDate('created_at', '<=', $request->input('end_date'));
+                })
+                ->paginate($page_size, ['*'], 'page', $page);
 
             return response()->json([
                 "data" => $list,
@@ -81,7 +92,7 @@ class ProductController extends Controller
 
                 $products = collect($request->get('products', []));
 
-                $products->each(function ($product){
+                $products->each(function ($product) {
                     Product::create([
                         "name" => $product['name'],
                         "description" => $product['description'] ?? $product['name'],
@@ -107,7 +118,8 @@ class ProductController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function detail(Request $request){
+    public function detail(Request $request)
+    {
         try {
             $request->validate([
                 "id" => "required|string"
@@ -117,8 +129,7 @@ class ProductController extends Controller
 
             return response(["message" => !$product ? 'Not found product' : $product], 200);
 
-        }catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return response()->json(["message" => $e->getMessage()], 500);
         }
     }
@@ -135,15 +146,12 @@ class ProductController extends Controller
                 "id" => "required|string"
             ]);
 
-            $product = Product::find($request->id);
-            if(!$product) {
-                return response()->json(['message' => "Not Found Product"], 200);
-            }
-            $product->delete();
-            return  response()->json(["message" => "Success"], 200);
+            $product = Product::findOrFail($request->id);
 
-        }catch (\Exception $e)
-        {
+            $product->delete();
+            return response()->json(["message" => "Success"], 200);
+
+        } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
@@ -160,8 +168,7 @@ class ProductController extends Controller
             Excel::import(new ProductImport(), $file);
 
             return response()->json(["message" => "Success"], 200);
-        }catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return response()->json(["message" => $e->getMessage()], 500);
         }
 
@@ -171,10 +178,37 @@ class ProductController extends Controller
     {
         try {
             return Excel::download(new ProductExport(), 'file.xlsx');
-        }catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return response()->json(["message" => $e->getMessage()], 500);
         }
     }
 
+
+    public function update(Request $request)
+    {
+        try {
+            DB::transaction(function () use ($request){
+                $request->validate([
+                    'id' => "required|string",
+                    "name" => "nullable|string",
+                    "description" => "string|max:255|nullable",
+                    'price' => "string|nullable",
+                ]);
+
+                $product = Product::findOrFail($request->id);
+
+                $product->update([
+                    'name' => $request->name,
+                    'description' => $request->description,
+                    'price' => $request->price,
+                ]);
+            });
+
+            return response()->json(['product' => 'Success'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
 }
