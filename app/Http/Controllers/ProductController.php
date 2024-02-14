@@ -58,29 +58,29 @@ class ProductController extends Controller
      * @param ProductionCreateRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(ProductionCreateRequest $request)
-    {
-        try {
-
-            $product = Product::create([
-                'name' => $request->name,
-                'description' => $request->input("description", $request->name),
-                'price' => $request->price,
-            ]);
-
-            return response()->json(['product' => $product], 200);
-
-        } catch (\Exception $e) {
-            return response()->json(["message" => $e->getMessage()], 500);
-        }
-    }
+//    public function create(ProductionCreateRequest $request)
+//    {
+//        try {
+//
+//            $product = Product::create([
+//                'name' => $request->name,
+//                'description' => $request->input("description", $request->name),
+//                'price' => $request->price,
+//            ]);
+//
+//            return response()->json(['product' => $product], 200);
+//
+//        } catch (\Exception $e) {
+//            return response()->json(["message" => $e->getMessage()], 500);
+//        }
+//    }
 
     /**
      * 批量创建商品接口
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function batchCreate(Request $request)
+    public function create(Request $request)
     {
         try {
             DB::transaction(function () use ($request) {
